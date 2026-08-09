@@ -6,16 +6,18 @@ export function ScreenTopBar({
   showBack = true,
   showAvatar = true,
   onBack,
+  light = false,
 }: {
   title: string
   showBack?: boolean
   showAvatar?: boolean
   onBack?: () => void
+  light?: boolean
 }) {
   const navigate = useNavigate()
 
   return (
-    <header className="screen-top-bar">
+    <header className={`screen-top-bar${light ? ' screen-top-bar-light' : ''}`}>
       {showBack ? (
         <button
           type="button"

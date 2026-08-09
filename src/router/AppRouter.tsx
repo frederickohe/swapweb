@@ -17,6 +17,13 @@ import { ProfilePage } from '../apps/web/pages/ProfilePage'
 import { SearchFiltersPage } from '../apps/web/pages/SearchFiltersPage'
 import { SignupPage } from '../apps/web/pages/SignupPage'
 import { SwapBayPage } from '../apps/web/pages/SwapBayPage'
+import {
+  SwapCompletePage,
+  SwapConfirmDashPage,
+  SwapConfirmYoursPage,
+  SwapInterestPage,
+  SwapSelectListingPage,
+} from '../apps/web/pages/SwapFlowPages'
 import { TwoFactorPage } from '../apps/web/pages/TwoFactorPage'
 
 export function AppRouter() {
@@ -34,6 +41,14 @@ export function AppRouter() {
               <Route path="my-listings" element={<MyListingsPage />} />
               <Route path="my-listings/filters" element={<SearchFiltersPage />} />
               <Route path="listings/new" element={<CreateListingPage />} />
+              <Route path="listings/:id/swap" element={<SwapInterestPage />} />
+              <Route path="listings/:id/swap/select" element={<SwapSelectListingPage />} />
+              <Route
+                path="listings/:id/swap/confirm-yours"
+                element={<SwapConfirmYoursPage />}
+              />
+              <Route path="listings/:id/swap/confirm" element={<SwapConfirmDashPage />} />
+              <Route path="listings/:id/swap/complete" element={<SwapCompletePage />} />
               <Route path="swap-bay" element={<SwapBayPage />} />
               <Route path="swap-bay/:id/go" element={<GoForSwapPage />} />
               <Route path="swap-bay/:id/pay" element={<PayTransactionPage />} />

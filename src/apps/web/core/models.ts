@@ -52,6 +52,11 @@ export interface UpdateProfileRequest {
   instagram_url?: string | null
 }
 
+export interface ListingWishlistItem {
+  category?: string
+  description?: string
+}
+
 export interface Listing {
   id: string
   title: string
@@ -65,6 +70,9 @@ export interface Listing {
   owner_fullname?: string | null
   user_id?: string
   primary_image_url?: string
+  created_at?: string | null
+  ownership_documents_available?: boolean
+  wishlist?: ListingWishlistItem[]
 }
 
 export interface ListingSearchResponse {
@@ -219,6 +227,47 @@ function extractImageUrls(raw: Record<string, unknown>): string[] {
   return [...new Set(urls)]
 }
 
+function normalizeWishlist(raw: unknown): ListingWishlistItem[] {
+  if (!Array.isArray(raw)) return []
+  const items: ListingWishlistItem[] = []
+  for (const entry of raw) {
+    if (typeof entry === 'string') {
+      const label = entry.trim()
+      if (label) items.push({ description: label })
+      continue
+    }
+    const row = asRecord(entry)
+    if (!row) continue
+    const category = pickString(row.category) || undefined
+    const description = pickString(row.description, row.label, row.name) || undefined
+    if (category || description) items.push({ category, description })
+  }
+  return items
+}
+
+export function listingWishlistLabels(listing: Listing): string[] {
+  return (listing.wishlist ?? [])
+    .map((item) => (item.description || item.category || '').trim())
+    .filter(Boolean)
+}
+
+export function formatListingPriceValue(value: number | null | undefined): string {
+  if (value == null || Number.isNaN(value)) return '—'
+  return `GH₵ ${value.toFixed(2)}`
+}
+
+export function formatListingDate(value: string | null | undefined): string {
+  if (!value) return '—'
+  const parsed = Date.parse(value)
+  if (Number.isNaN(parsed)) {
+    return value.length >= 10 ? value.slice(0, 10) : value
+  }
+  const dt = new Date(parsed)
+  const dd = String(dt.getDate()).padStart(2, '0')
+  const mm = String(dt.getMonth() + 1).padStart(2, '0')
+  return `${dd}/${mm}/${dt.getFullYear()}`
+}
+
 export function normalizeListing(raw: unknown): Listing {
   const r = asRecord(raw) ?? {}
   const images = extractImageUrls(r)
@@ -235,6 +284,11 @@ export function normalizeListing(raw: unknown): Listing {
     owner_fullname: pickString(r.owner_fullname, r.fullname) || null,
     user_id: pickString(r.user_id) || undefined,
     primary_image_url: images[0],
+    created_at: pickString(r.created_at, r.createdAt) || null,
+    ownership_documents_available: Boolean(
+      r.ownership_documents_available ?? r.ownershipDocumentsAvailable,
+    ),
+    wishlist: normalizeWishlist(r.wishlist),
   }
 }
 

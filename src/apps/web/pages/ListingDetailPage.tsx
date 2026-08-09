@@ -1,23 +1,27 @@
 import { useEffect, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
+import { ScreenTopBar } from '../components/ScreenTopBar'
 import { useAuth } from '../core/AuthContext'
 import { useAuthSheet } from '../components/AuthSheet'
 import type { Listing } from '../core/models'
-import { listingsApi, swapsApi } from '../core/services'
+import {
+  formatListingDate,
+  formatListingPriceValue,
+  listingWishlistLabels,
+} from '../core/models'
+import { listingsApi } from '../core/services'
 import { ApiError } from '../core/utils/apiError'
 
 export function ListingDetailPage() {
   const { id = '' } = useParams()
+  const navigate = useNavigate()
   const { isAuthenticated, user } = useAuth()
   const { openLogin } = useAuthSheet()
 
   const [listing, setListing] = useState<Listing | null>(null)
-  const [myListings, setMyListings] = useState<Listing[]>([])
-  const [offerId, setOfferId] = useState('')
   const [loading, setLoading] = useState(true)
-  const [swapping, setSwapping] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [swapMessage, setSwapMessage] = useState<string | null>(null)
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null)
 
   useEffect(() => {
     if (!id) return
@@ -47,147 +51,164 @@ export function ListingDetailPage() {
     }
   }, [id])
 
-  useEffect(() => {
-    if (!isAuthenticated) return
-    let cancelled = false
-    void listingsApi
-      .mine()
-      .then((items) => {
-        if (cancelled) return
-        setMyListings(items.filter((item) => item.id !== id))
-      })
-      .catch(() => {
-        if (!cancelled) setMyListings([])
-      })
-    return () => {
-      cancelled = true
-    }
-  }, [isAuthenticated, id])
-
-  const onSwap = async () => {
-    if (!listing) return
-    if (!isAuthenticated) {
-      openLogin({ next: `/listings/${listing.id}` })
-      return
-    }
-    if (!offerId) {
-      setSwapMessage('Select one of your listings to offer.')
-      return
-    }
-
-    setSwapping(true)
-    setSwapMessage(null)
-    try {
-      await swapsApi.createRequest(listing.id, offerId)
-      setSwapMessage('Swap request sent. Check Swap Bay for status.')
-    } catch (err) {
-      setSwapMessage(
-        err instanceof ApiError || err instanceof Error
-          ? err.message
-          : 'Could not create swap request',
-      )
-    } finally {
-      setSwapping(false)
-    }
-  }
-
   if (loading) {
     return (
-      <div className="loading-state">
-        <i className="ri-loader-4-line spin" aria-hidden />
-        <p>Loading listing…</p>
+      <div className="listing-detail-page">
+        <ScreenTopBar title="" showAvatar={false} />
+        <div className="loading-state">
+          <i className="ri-loader-4-line spin" aria-hidden />
+          <p>Loading listing…</p>
+        </div>
       </div>
     )
   }
 
   if (error || !listing) {
     return (
-      <div className="error-state">
-        <p>{error || 'Listing not found'}</p>
-        <Link to="/" className="btn btn-secondary" style={{ marginTop: '1rem' }}>
-          Back to browse
-        </Link>
+      <div className="listing-detail-page">
+        <ScreenTopBar title="" showAvatar={false} />
+        <div className="error-state">
+          <p>{error || 'Listing not found'}</p>
+          <Link to="/" className="btn btn-secondary" style={{ marginTop: '1rem' }}>
+            Back to browse
+          </Link>
+        </div>
       </div>
     )
   }
 
   const isOwn = !!user && listing.user_id === user.id
-  const image = listing.images[0]
+  const images = listing.images.length > 0 ? listing.images : []
+  const wishlist = listingWishlistLabels(listing)
+  const price = formatListingPriceValue(listing.estimated_value)
+  const date = formatListingDate(listing.created_at)
+  const receipts = listing.ownership_documents_available ? 'Yes' : 'No'
+  const status = listing.condition || listing.status || '—'
+
+  const startSwap = () => {
+    if (!isAuthenticated) {
+      openLogin({ next: `/listings/${listing.id}/swap` })
+      return
+    }
+    navigate(`/listings/${listing.id}/swap`, { state: { target: listing } })
+  }
 
   return (
-    <div>
-      <div className="detail-hero">
-        {image ? (
-          <img src={image} alt={listing.title} />
-        ) : (
-          <div style={{ width: '100%', height: '100%', display: 'grid', placeItems: 'center', color: '#aaa' }}>
-            <i className="ri-image-line" style={{ fontSize: 40 }} aria-hidden />
-          </div>
-        )}
-      </div>
+    <div className="listing-detail-page">
+      <ScreenTopBar title="" showAvatar={false} />
 
-      <h1 className="page-title">{listing.title}</h1>
-      <div className="detail-meta">
-        {listing.category && <span className="chip">{listing.category}</span>}
-        {listing.condition && <span className="chip">{listing.condition}</span>}
-        {listing.location && <span className="chip">{listing.location}</span>}
-        {listing.estimated_value != null && (
-          <span className="chip">Est. GHS {listing.estimated_value.toLocaleString()}</span>
-        )}
-      </div>
-
-      {listing.description && (
-        <p style={{ margin: '0 0 1rem', lineHeight: 1.55, whiteSpace: 'pre-wrap' }}>
-          {listing.description}
-        </p>
-      )}
-
-      {listing.owner_fullname && (
-        <p className="page-sub" style={{ marginBottom: '0.5rem' }}>
-          Listed by {listing.owner_fullname}
-        </p>
-      )}
-
-      {!isOwn && (
-        <div className="detail-actions" style={{ flexDirection: 'column', alignItems: 'stretch' }}>
-          {isAuthenticated && myListings.length > 0 && (
-            <div className="form-group" style={{ marginBottom: 0 }}>
-              <label className="form-label" htmlFor="offerListing">
-                Offer one of your listings
-              </label>
-              <select
-                id="offerListing"
-                className="form-select"
-                value={offerId}
-                onChange={(e) => setOfferId(e.target.value)}
+      <div className="listing-detail-body">
+        <div className="listing-detail-gallery" role="list">
+          {images.length > 0 ? (
+            images.map((src, index) => (
+              <button
+                key={`${src}-${index}`}
+                type="button"
+                className="listing-detail-thumb"
+                role="listitem"
+                onClick={() => setLightboxIndex(index)}
               >
-                <option value="">Select a listing</option>
-                {myListings.map((item) => (
-                  <option key={item.id} value={item.id}>
-                    {item.title}
-                  </option>
-                ))}
-              </select>
+                <img src={src} alt="" />
+              </button>
+            ))
+          ) : (
+            <div className="listing-detail-thumb listing-detail-thumb-empty">
+              <i className="ri-image-line" aria-hidden />
             </div>
           )}
+        </div>
 
+        <h1 className="listing-detail-title">{listing.title}</h1>
+
+        {listing.description ? (
+          <p className="listing-detail-desc">{listing.description}</p>
+        ) : null}
+
+        <div className="listing-detail-location">
+          <span className="listing-detail-label">Location :</span>
+          <i className="ri-map-pin-line" aria-hidden />
+          <span>{listing.location || '—'}</span>
+        </div>
+
+        {wishlist.length > 0 && (
+          <section className="listing-detail-wishlist">
+            <h2>User Wishlist</h2>
+            <div className="listing-wishlist-chips">
+              {wishlist.map((label) => (
+                <span key={label} className="listing-wishlist-chip">
+                  {label}
+                </span>
+              ))}
+            </div>
+          </section>
+        )}
+
+        <div className="listing-detail-price">
+          <span className="listing-detail-label">Price :</span>
+          <span className="listing-detail-price-value">{price}</span>
+        </div>
+
+        <div className="listing-detail-meta-grid">
+          <div className="listing-meta-tile">
+            <i className="ri-calendar-line" aria-hidden />
+            <div>
+              <strong>Date</strong>
+              <span>{date}</span>
+            </div>
+          </div>
+          <div className="listing-meta-tile">
+            <i className="ri-price-tag-3-line" aria-hidden />
+            <div>
+              <strong>Category</strong>
+              <span>{listing.category || '—'}</span>
+            </div>
+          </div>
+          <div className="listing-meta-tile">
+            <i className="ri-file-list-3-line" aria-hidden />
+            <div>
+              <strong>Receipts</strong>
+              <span>{receipts}</span>
+            </div>
+          </div>
+          <div className="listing-meta-tile">
+            <i className="ri-information-line" aria-hidden />
+            <div>
+              <strong>Status</strong>
+              <span>{status}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {!isOwn && (
+        <div className="listing-detail-cta">
+          <button type="button" className="listing-swap-this-btn" onClick={startSwap}>
+            Swap This
+          </button>
+        </div>
+      )}
+
+      {lightboxIndex != null && images[lightboxIndex] && (
+        <div
+          className="listing-lightbox"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Listing image"
+          onClick={() => setLightboxIndex(null)}
+        >
           <button
             type="button"
-            className="btn btn-primary"
-            disabled={swapping}
-            onClick={() => void onSwap()}
+            className="listing-lightbox-close"
+            aria-label="Close"
+            onClick={() => setLightboxIndex(null)}
           >
-            {swapping ? 'Sending…' : isAuthenticated ? 'Swap This' : 'Log in to Swap'}
+            <i className="ri-close-line" aria-hidden />
           </button>
-
-          {isAuthenticated && myListings.length === 0 && (
-            <p className="form-hint">
-              You need a listing to swap.{' '}
-              <Link to="/listings/new">Create one</Link>
-            </p>
-          )}
-
-          {swapMessage && <p className="form-hint">{swapMessage}</p>}
+          <img
+            src={images[lightboxIndex]}
+            alt={listing.title}
+            onClick={(e) => e.stopPropagation()}
+          />
         </div>
       )}
     </div>

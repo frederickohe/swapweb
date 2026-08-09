@@ -31,9 +31,13 @@ export function AppShell() {
   const isProfileRoot = path === '/profile'
   const isMyListings = path === '/my-listings'
   const isSwapBay = path === '/swap-bay'
+  const isListingDetail = /^\/listings\/[^/]+$/.test(path)
+  const isSwapFlow = /\/listings\/[^/]+\/swap/.test(path)
   const hidesShellTop =
     isMyListings ||
     isSwapBay ||
+    isListingDetail ||
+    isSwapFlow ||
     path.startsWith('/profile/') ||
     path.startsWith('/swap-bay/') ||
     path === '/notifications' ||
@@ -42,9 +46,13 @@ export function AppShell() {
   const showFab =
     !path.startsWith('/profile') &&
     !path.startsWith('/swap-bay') &&
+    !isListingDetail &&
+    !isSwapFlow &&
     path !== '/notifications' &&
     path !== '/my-listings/filters'
   const showFilterFab = isMyListings
+  const hideGlassNav = isSwapFlow
+
 
   useEffect(() => {
     setQuery(searchParams.get('q') ?? '')
@@ -154,7 +162,7 @@ export function AppShell() {
         </header>
       )}
 
-      <main className="shell-main">
+      <main className={`shell-main${hideGlassNav ? ' shell-main-flush' : ''}`}>
         <Outlet />
       </main>
 
@@ -187,24 +195,26 @@ export function AppShell() {
         </div>
       )}
 
-      <nav className="shell-glass-nav" aria-label="Main">
-        <div className="shell-glass-nav-inner">
-          {navItems.map((item) => (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              end={item.end}
-              className={({ isActive }) =>
-                `shell-glass-item${isActive ? ' active' : ''}`
-              }
-              aria-label={item.label}
-              onClick={(e) => onProtectedNav(e, item.to, item.auth)}
-            >
-              <i className={item.icon} aria-hidden />
-            </NavLink>
-          ))}
-        </div>
-      </nav>
+      {!hideGlassNav && (
+        <nav className="shell-glass-nav" aria-label="Main">
+          <div className="shell-glass-nav-inner">
+            {navItems.map((item) => (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                end={item.end}
+                className={({ isActive }) =>
+                  `shell-glass-item${isActive ? ' active' : ''}`
+                }
+                aria-label={item.label}
+                onClick={(e) => onProtectedNav(e, item.to, item.auth)}
+              >
+                <i className={item.icon} aria-hidden />
+              </NavLink>
+            ))}
+          </div>
+        </nav>
+      )}
     </div>
   )
 }
