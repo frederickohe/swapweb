@@ -146,7 +146,7 @@ export function AppShell() {
                 }
                 onClick={openNotifications}
               >
-                <i className="ri-notification-3-fill" aria-hidden />
+                <i className="ph-duotone ph-bell" aria-hidden />
                 {unreadCount > 0 && <span className="shell-notif-dot" aria-hidden />}
               </button>
             </>

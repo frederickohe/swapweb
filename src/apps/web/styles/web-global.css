@@ -149,7 +149,7 @@
   width: 50px;
   height: 50px;
   border-radius: 50%;
-  border: 1.2px solid var(--brand-notif-border);
+  border: 1px solid var(--brand-border);
   background: #fff;
   color: var(--brand-ink);
   display: grid;
@@ -157,21 +157,38 @@
   cursor: pointer;
   padding: 0;
   position: relative;
+  transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+}
+
+.shell-notif:hover {
+  background: #fafafa;
+  border-color: #e2e2ea;
+}
+
+.shell-notif:active {
+  transform: scale(0.96);
 }
 
 .shell-notif i {
-  font-size: 20px;
+  font-size: 22px;
+  line-height: 1;
+}
+
+.shell-notif .ph-duotone {
+  /* Soft dual-tone: primary stroke + light fill */
+  --ph-fill: 0.18;
 }
 
 .shell-notif-dot {
   position: absolute;
-  top: 8px;
-  right: 10px;
-  width: 12px;
-  height: 12px;
+  top: 10px;
+  right: 11px;
+  width: 9px;
+  height: 9px;
   border-radius: 50%;
   background: #fd5f4a;
   border: 2px solid #fff;
+  box-shadow: 0 0 0 1px rgba(253, 95, 74, 0.2);
   pointer-events: none;
 }
 
