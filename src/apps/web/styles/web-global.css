@@ -2942,22 +2942,29 @@
   gap: 12px;
   min-height: 72px;
   padding: 12px 14px;
-  border-radius: 16px;
-  border: 1px solid #e6e8ef;
+  border-radius: 14px;
+  border: 1.5px solid var(--brand-border);
   background: #fff;
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.05);
   text-align: left;
   cursor: pointer;
   font-family: inherit;
   color: var(--brand-ink);
+  transition:
+    border-color 0.15s ease,
+    background-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.add-belonging-category-card:hover {
+  border-color: #dddce6;
+  background: #fafafb;
 }
 
 .add-belonging-category-card.selected {
-  background: #111;
+  background: var(--brand-gold-soft);
   border-color: var(--brand-gold);
-  border-width: 1.5px;
-  color: #fff;
-  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.12);
+  color: var(--brand-ink);
+  box-shadow: none;
 }
 
 .add-belonging-category-icon {
@@ -2965,34 +2972,49 @@
   height: 40px;
   border-radius: 12px;
   background: #f5f4f8;
+  color: var(--brand-ink);
   display: inline-flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
   font-size: 1.15rem;
+  transition: background-color 0.15s ease, color 0.15s ease;
 }
 
 .add-belonging-category-card.selected .add-belonging-category-icon {
-  background: rgba(255, 255, 255, 0.14);
+  background: rgba(195, 182, 73, 0.22);
+  color: var(--brand-gold-hover);
 }
 
 .add-belonging-category-label {
   flex: 1;
+  min-width: 0;
   font-size: 0.875rem;
-  font-weight: 600;
-  line-height: 1.15;
+  font-weight: 500;
+  line-height: 1.25;
 }
 
 .add-belonging-category-check {
-  width: 26px;
-  height: 26px;
+  width: 22px;
+  height: 22px;
   border-radius: 999px;
-  background: var(--brand-gold);
-  color: #000;
+  border: 1.5px solid #d8d7df;
+  background: #fff;
+  color: #fff;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  font-size: 0.8rem;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.add-belonging-category-check.on {
+  background: var(--brand-gold);
+  border-color: var(--brand-gold);
+  color: #111;
 }
 
 .add-belonging-spec-upload {
@@ -3047,7 +3069,8 @@
   background: #f5f4f8;
   color: var(--brand-ink);
   font-family: inherit;
-  font-size: 0.875rem;
+  /* 16px prevents iOS Safari zoom-on-focus */
+  font-size: 16px;
   outline: none;
 }
 

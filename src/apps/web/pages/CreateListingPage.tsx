@@ -309,16 +309,18 @@ export function CreateListingPage() {
                     type="button"
                     className={`add-belonging-category-card${selected ? ' selected' : ''}`}
                     onClick={() => setCategory(label)}
+                    aria-pressed={selected}
                   >
                     <span className="add-belonging-category-icon" aria-hidden>
                       <i className={categoryIcon(label)} />
                     </span>
                     <span className="add-belonging-category-label">{label}</span>
-                    {selected && (
-                      <span className="add-belonging-category-check" aria-hidden>
-                        <i className="ri-check-line" />
-                      </span>
-                    )}
+                    <span
+                      className={`add-belonging-category-check${selected ? ' on' : ''}`}
+                      aria-hidden
+                    >
+                      {selected ? <i className="ri-check-line" /> : null}
+                    </span>
                   </button>
                 )
               })}
