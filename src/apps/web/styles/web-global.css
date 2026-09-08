@@ -114,14 +114,18 @@
 }
 
 .shell-search-home {
-  height: 62px;
-  border-radius: 31px;
-  padding: 0 20px;
+  height: 76px;
+  border-radius: 38px;
+  padding: 0 22px;
 }
 
 .shell-search-home input::placeholder {
   font-size: 13px;
   font-weight: 400;
+}
+
+.shell-search-home .shell-search-btn i {
+  font-size: 22px;
 }
 
 .shell-search-btn {
@@ -164,10 +168,13 @@
   margin: 0;
   flex: 1;
   min-width: 0;
-  font-size: 28px;
+  font-size: 20px;
   font-weight: 300;
-  line-height: 1.15;
-  letter-spacing: -0.03em;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   color: var(--brand-ink);
 }
 
