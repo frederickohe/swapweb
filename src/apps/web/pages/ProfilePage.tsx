@@ -11,7 +11,7 @@ function formatPrice(value: number | null): string {
 }
 
 export function ProfilePage() {
-  const { user, logout } = useAuth()
+  const { user, logout, deleteAccount } = useAuth()
   const navigate = useNavigate()
   const [profile, setProfile] = useState<UserProfile | null>(user)
   const [listings, setListings] = useState<Listing[]>([])
@@ -19,7 +19,9 @@ export function ProfilePage() {
   const [error, setError] = useState<string | null>(null)
   const [toast, setToast] = useState<string | null>(null)
   const [confirmLogout, setConfirmLogout] = useState(false)
+  const [confirmDelete, setConfirmDelete] = useState(false)
   const [loggingOut, setLoggingOut] = useState(false)
+  const [deleting, setDeleting] = useState(false)
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -69,7 +71,22 @@ export function ProfilePage() {
     }
   }
 
-  const soon = (label: string) => setToast(`${label} coming soon`)
+  const onDeleteAccount = async () => {
+    setDeleting(true)
+    try {
+      await deleteAccount()
+      setConfirmDelete(false)
+      navigate('/', { replace: true, state: { accountDeleted: true } })
+    } catch (err) {
+      setDeleting(false)
+      setConfirmDelete(false)
+      setToast(
+        err instanceof ApiError || err instanceof Error
+          ? err.message
+          : 'Could not delete account. Please try again.',
+      )
+    }
+  }
 
   if (loading) {
     return (
@@ -113,7 +130,8 @@ export function ProfilePage() {
     {
       label: 'Delete Account',
       icon: 'ri-delete-bin-line',
-      onClick: () => soon('Delete account'),
+      destructive: true,
+      onClick: () => setConfirmDelete(true),
     },
     {
       label: 'Log Out',
@@ -143,7 +161,7 @@ export function ProfilePage() {
           <button
             key={item.label}
             type="button"
-            className="profile-menu-item"
+            className={`profile-menu-item${item.destructive ? ' destructive' : ''}`}
             onClick={item.onClick}
           >
             <i className={`${item.icon} profile-menu-icon`} aria-hidden />
@@ -221,6 +239,53 @@ export function ProfilePage() {
               </button>
             </div>
           </div>
+        </div>
+      )}
+
+      {confirmDelete && (
+        <div className="profile-dialog-root" role="dialog" aria-modal="true">
+          <button
+            type="button"
+            className="profile-dialog-backdrop"
+            aria-label="Cancel"
+            disabled={deleting}
+            onClick={() => {
+              if (!deleting) setConfirmDelete(false)
+            }}
+          />
+          <div className="profile-dialog">
+            <h3>Delete account?</h3>
+            <p>
+              This permanently deletes your SwapPro account, profile, listings, and
+              personal data. You will not be able to sign in again. This cannot be
+              undone.
+            </p>
+            <div className="profile-dialog-actions">
+              <button
+                type="button"
+                className="btn btn-secondary"
+                disabled={deleting}
+                onClick={() => setConfirmDelete(false)}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="btn profile-logout-btn"
+                disabled={deleting}
+                onClick={() => void onDeleteAccount()}
+              >
+                {deleting ? 'Deleting…' : 'Delete'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {deleting && (
+        <div className="profile-deleting-overlay" aria-live="polite">
+          <i className="ri-loader-4-line spin" aria-hidden />
+          <p>Deleting your account…</p>
         </div>
       )}
     </div>

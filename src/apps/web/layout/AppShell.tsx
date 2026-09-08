@@ -30,22 +30,26 @@ export function AppShell() {
   const isHome = path === '/'
   const isProfileRoot = path === '/profile'
   const isMyListings = path === '/my-listings'
+  const isSearch = path === '/search'
   const isSwapBay = path === '/swap-bay'
   const isListingDetail = /^\/listings\/[^/]+$/.test(path)
   const isSwapFlow = /\/listings\/[^/]+\/swap/.test(path)
   const hidesShellTop =
     isMyListings ||
+    isSearch ||
     isSwapBay ||
     isListingDetail ||
     isSwapFlow ||
     path.startsWith('/profile/') ||
     path.startsWith('/swap-bay/') ||
     path === '/notifications' ||
-    path === '/my-listings/filters'
-  const showSearchChrome = !hidesShellTop && !isProfileRoot
+    path === '/my-listings/filters' ||
+    path === '/search/filters'
+  const showSearchChrome = !hidesShellTop && !isProfileRoot && !isHome
   const showFab =
     !path.startsWith('/profile') &&
     !path.startsWith('/swap-bay') &&
+    !path.startsWith('/search') &&
     !isListingDetail &&
     !isSwapFlow &&
     path !== '/notifications' &&
@@ -80,25 +84,17 @@ export function AppShell() {
     }
   }, [isAuthenticated, path])
 
-  const goToListings = (keyword?: string) => {
+  const goToSearch = (keyword?: string) => {
     const q = keyword?.trim() ?? ''
     const params = new URLSearchParams()
     if (q) params.set('q', q)
     const qs = params.toString()
-    navigate(qs ? `/?${qs}` : '/', {
-      state: { refresh: Date.now() },
-    })
+    navigate(qs ? `/search?${qs}` : '/search')
   }
 
   const onSearch = (e: FormEvent) => {
     e.preventDefault()
-    goToListings(query)
-  }
-
-  const onSearchIconClick = () => {
-    // Search icon opens the full listings feed (all properties).
-    setQuery('')
-    goToListings()
+    goToSearch(query)
   }
 
   const openNotifications = () => {
@@ -119,7 +115,39 @@ export function AppShell() {
     <div className="web-app shell">
       {!hidesShellTop && (
         <header className={`shell-top ${isHome ? 'shell-top-home' : ''}`}>
-          {isProfileRoot ? (
+          {isHome ? (
+            <div className="shell-home-header">
+              <div className="shell-home-heading-row">
+                <h1 className="shell-want-title">What do you want?</h1>
+                <button
+                  type="button"
+                  className="shell-notif"
+                  aria-label={
+                    unreadCount > 0
+                      ? `Notifications, ${unreadCount} unread`
+                      : 'Notifications'
+                  }
+                  onClick={openNotifications}
+                >
+                  <i className="ph-duotone ph-bell" aria-hidden />
+                  {unreadCount > 0 && <span className="shell-notif-dot" aria-hidden />}
+                </button>
+              </div>
+              <form className="shell-search" onSubmit={onSearch} role="search">
+                <input
+                  type="search"
+                  enterKeyHint="search"
+                  placeholder="search here"
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  aria-label="Search listings"
+                />
+                <button type="submit" className="shell-search-btn" aria-label="Search">
+                  <i className="ri-search-line" aria-hidden />
+                </button>
+              </form>
+            </div>
+          ) : isProfileRoot ? (
             <div className="shell-page-heading">
               <h1>Your Profile</h1>
             </div>
@@ -129,17 +157,12 @@ export function AppShell() {
                 <input
                   type="search"
                   enterKeyHint="search"
-                  placeholder="Search ..."
+                  placeholder="search here"
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   aria-label="Search listings"
                 />
-                <button
-                  type="button"
-                  className="shell-search-btn"
-                  aria-label="Browse all listings"
-                  onClick={onSearchIconClick}
-                >
+                <button type="submit" className="shell-search-btn" aria-label="Search">
                   <i className="ri-search-line" aria-hidden />
                 </button>
               </form>

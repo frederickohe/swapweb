@@ -23,9 +23,12 @@ function buildQuery(params: Record<string, string | number | boolean | undefined
 
 export async function apiRequest<T>(
   path: string,
-  options: RequestInit & { params?: Record<string, string | number | boolean | undefined> } = {},
+  options: RequestInit & {
+    params?: Record<string, string | number | boolean | undefined>
+    skipUnauthorized?: boolean
+  } = {},
 ): Promise<T> {
-  const { params, ...init } = options
+  const { params, skipUnauthorized, ...init } = options
   const baseUrl = getAppConfig().apiBaseUrl
   const url = `${baseUrl}${path}${params ? buildQuery(params) : ''}`
 
@@ -58,7 +61,7 @@ export async function apiRequest<T>(
   }
 
   if (!response.ok) {
-    if (response.status === 401 && !isLogin) {
+    if (response.status === 401 && !isLogin && !skipUnauthorized) {
       onUnauthorized?.()
     }
     throw new ApiError(extractErrorMessage(response.status, body, response.statusText), response.status, body)

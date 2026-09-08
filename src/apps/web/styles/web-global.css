@@ -109,8 +109,8 @@
 
 .shell-search input::placeholder {
   color: var(--brand-ink);
-  font-weight: 300;
-  opacity: 1;
+  font-weight: 400;
+  opacity: 0.5;
 }
 
 .shell-search-btn {
@@ -127,6 +127,36 @@
 .shell-search-btn i {
   font-size: 20px;
   font-weight: 600;
+}
+
+.shell-top-home {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0;
+  padding-top: 8px;
+}
+
+.shell-home-header {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: 100%;
+}
+
+.shell-home-heading-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.shell-want-title {
+  margin: 0;
+  flex: 1;
+  min-width: 0;
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--brand-ink);
 }
 
 .shell-page-heading {
@@ -2479,6 +2509,24 @@
   flex-shrink: 0;
 }
 
+.profile-menu-item.destructive .profile-menu-icon,
+.profile-menu-item.destructive .profile-menu-label {
+  color: #e53935;
+}
+
+.profile-deleting-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  color: #fff;
+}
+
 .profile-listings {
   margin: 22px 21px 0;
   text-align: center;
@@ -3470,6 +3518,154 @@
   margin: 0;
   text-align: center;
   font-size: 0.75rem;
+}
+
+/* ——— Search properties (Flutter SearchPropertiesPage) ——— */
+
+.search-page {
+  padding-bottom: 140px;
+}
+
+.search-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 24px var(--shell-pad-x) 0;
+}
+
+.search-toolbar .shell-search {
+  flex: 1;
+}
+
+.search-view-toggle {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid var(--brand-notif-border);
+  background: #fff;
+  color: #292526;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  padding: 0;
+}
+
+.search-view-toggle i {
+  font-size: 20px;
+}
+
+.search-wishlist {
+  margin: 12px var(--shell-pad-x) 0;
+}
+
+.search-wishlist-icon {
+  font-size: 18px;
+  color: rgba(17, 17, 17, 0.55);
+  flex-shrink: 0;
+}
+
+.search-list {
+  padding: 20px var(--shell-pad-x) 0;
+}
+
+.search-list-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  color: inherit;
+  text-decoration: none;
+  padding: 14px 0;
+}
+
+.search-list-card + .search-list-card {
+  border-top: 1px solid #f6f6f6;
+}
+
+.search-list-thumb {
+  width: 88px;
+  height: 88px;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #f5f5f8;
+  flex-shrink: 0;
+}
+
+.search-list-thumb img,
+.search-list-thumb .feed-card-placeholder {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.search-list-body {
+  min-width: 0;
+  flex: 1;
+}
+
+.search-list-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: #121111;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  line-clamp: 2;
+  overflow: hidden;
+}
+
+.search-list-location {
+  margin-top: 4px;
+  font-size: 10px;
+  color: var(--brand-subtle);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.search-list-price {
+  margin-top: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #292526;
+}
+
+.search-wish-empty {
+  margin-top: 8px;
+  font-size: 10px;
+  color: var(--brand-subtle);
+}
+
+.search-wish-chips {
+  margin-top: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.search-wish-chip {
+  max-width: 140px;
+  padding: 3px 8px;
+  border-radius: 25px;
+  background: #f5f4f8;
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--brand-ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.search-grid {
+  padding: 32px var(--shell-pad-x) 0;
+}
+
+.search-filter-fab {
+  position: fixed;
+  right: max(16px, calc(50% - (var(--max-width) / 2) + 16px));
+  bottom: var(--fab-bottom);
+  z-index: 28;
 }
 
 @media (min-width: 768px) {

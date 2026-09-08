@@ -15,6 +15,7 @@ import { PayTransactionPage } from '../apps/web/pages/PayTransactionPage'
 import { ProfileEditPage } from '../apps/web/pages/ProfileEditPage'
 import { ProfilePage } from '../apps/web/pages/ProfilePage'
 import { SearchFiltersPage } from '../apps/web/pages/SearchFiltersPage'
+import { SearchPage } from '../apps/web/pages/SearchPage'
 import { SignupPage } from '../apps/web/pages/SignupPage'
 import { SwapBayPage } from '../apps/web/pages/SwapBayPage'
 import {
@@ -36,6 +37,8 @@ export function AppRouter() {
 
           <Route element={<AppShell />}>
             <Route index element={<HomePage />} />
+            <Route path="search" element={<SearchPage />} />
+            <Route path="search/filters" element={<SearchFiltersPage />} />
 
             <Route element={<RequireAuth />}>
               <Route path="my-listings" element={<MyListingsPage />} />

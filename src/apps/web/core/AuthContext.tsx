@@ -23,6 +23,7 @@ interface AuthContextValue {
   signup: (payload: SignupRequest) => Promise<void>
   logout: () => Promise<void>
   logoutLocally: () => void
+  deleteAccount: () => Promise<void>
   refreshUser: () => Promise<UserProfile | null>
   setUserProfile: (user: UserProfile) => void
 }
@@ -106,6 +107,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     clearSession()
   }, [clearSession])
 
+  const deleteAccount = useCallback(async () => {
+    await authApi.deleteAccount()
+    clearSession()
+  }, [clearSession])
+
   const setUserProfile = useCallback((profile: UserProfile) => {
     setUser(profile)
     storage.setJson('user', profile)
@@ -131,10 +137,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       signup,
       logout,
       logoutLocally: clearSession,
+      deleteAccount,
       refreshUser,
       setUserProfile,
     }),
-    [token, user, login, signup, logout, clearSession, refreshUser, setUserProfile],
+    [token, user, login, signup, logout, clearSession, deleteAccount, refreshUser, setUserProfile],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

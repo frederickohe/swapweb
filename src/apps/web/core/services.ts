@@ -16,6 +16,7 @@ import {
   type UpdateProfileRequest,
   type UserProfile,
 } from './models'
+import { ApiError } from './utils/apiError'
 import { storage } from './utils/storage'
 
 interface SigninResponse {
@@ -157,6 +158,20 @@ export const authApi = {
       }),
     })
   },
+
+  async deleteAccount(): Promise<void> {
+    try {
+      await apiRequest('/user/me', {
+        method: 'DELETE',
+        skipUnauthorized: true,
+      })
+    } catch (err) {
+      if (err instanceof ApiError && err.status === 403) {
+        if (err.message.toLowerCase().includes('deleted')) return
+      }
+      throw err
+    }
+  },
 }
 
 export const notificationsApi = {
@@ -191,6 +206,10 @@ export const listingsApi = {
   async search(params: {
     keyword?: string
     category?: string
+    condition?: string
+    location?: string
+    minValue?: number
+    maxValue?: number
     page?: number
     size?: number
   }): Promise<ListingSearchResponse> {
@@ -198,6 +217,10 @@ export const listingsApi = {
       params: {
         keyword: params.keyword,
         category: params.category,
+        condition: params.condition,
+        location: params.location,
+        min_value: params.minValue,
+        max_value: params.maxValue,
         page: params.page ?? 1,
         size: params.size ?? 24,
       },

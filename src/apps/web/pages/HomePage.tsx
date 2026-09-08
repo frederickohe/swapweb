@@ -30,18 +30,20 @@ export function HomePage() {
   const navigate = useNavigate()
   const location = useLocation()
   const [searchParams] = useSearchParams()
-  const keyword = searchParams.get('q')?.trim() || ''
-  const category = searchParams.get('category')?.trim() || ''
   const refreshToken =
     typeof (location.state as { refresh?: unknown } | null)?.refresh === 'number'
       ? ((location.state as { refresh: number }).refresh)
       : 0
+  const accountDeleted = !!(
+    location.state as { accountDeleted?: boolean } | null
+  )?.accountDeleted
 
   const [listings, setListings] = useState<Listing[]>([])
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [pullDistance, setPullDistance] = useState(0)
+  const [deletedToast, setDeletedToast] = useState(accountDeleted)
 
   const pullStartY = useRef<number | null>(null)
   const pulling = useRef(false)
@@ -54,8 +56,6 @@ export function HomePage() {
 
       try {
         const res = await listingsApi.search({
-          keyword: keyword || undefined,
-          category: category || undefined,
           page: 1,
           size: 40,
         })
@@ -72,19 +72,31 @@ export function HomePage() {
         setPullDistance(0)
       }
     },
-    [keyword, category],
+    [],
   )
+
+  useEffect(() => {
+    const q = searchParams.get('q')?.trim() || ''
+    const category = searchParams.get('category')?.trim() || ''
+    if (!q && !category) return
+    const params = new URLSearchParams()
+    if (q) params.set('q', q)
+    if (category) params.set('category', category)
+    navigate(`/search?${params.toString()}`, { replace: true })
+  }, [navigate, searchParams])
 
   useEffect(() => {
     void loadListings('initial')
   }, [loadListings, refreshToken])
 
+  useEffect(() => {
+    if (!accountDeleted) return
+    const t = window.setTimeout(() => setDeletedToast(false), 3200)
+    return () => window.clearTimeout(t)
+  }, [accountDeleted])
+
   const selectCategory = (label: string) => {
-    const params = new URLSearchParams()
-    if (keyword) params.set('q', keyword)
-    if (category !== label) params.set('category', label)
-    const qs = params.toString()
-    navigate(qs ? `/?${qs}` : '/', { state: { refresh: Date.now() } })
+    navigate(`/search?category=${encodeURIComponent(label)}`)
   }
 
   const onTouchStart = (e: TouchEvent) => {
@@ -150,7 +162,7 @@ export function HomePage() {
             key={cat.label}
             type="button"
             role="listitem"
-            className={`category-tile${category === cat.label ? ' active' : ''}`}
+            className="category-tile"
             onClick={() => selectCategory(cat.label)}
           >
             <img src={cat.icon} alt="" width={40} height={40} />
@@ -159,14 +171,7 @@ export function HomePage() {
         ))}
       </div>
 
-      <h2 className="home-section-title">
-        {category || keyword ? 'Results' : 'Recent Posts'}
-      </h2>
-      {(category || keyword) && (
-        <p className="home-filter-hint">
-          {[category, keyword ? `“${keyword}”` : ''].filter(Boolean).join(' · ')}
-        </p>
-      )}
+      <h2 className="home-section-title">Recent Posts</h2>
 
       {loading && (
         <div className="loading-state">
@@ -195,6 +200,12 @@ export function HomePage() {
               <ListingCard key={listing.id} listing={listing} tall={i % 2 === 1} />
             ))}
           </div>
+        </div>
+      )}
+
+      {deletedToast && (
+        <div className="profile-toast" role="status">
+          Your account has been deleted.
         </div>
       )}
     </div>
