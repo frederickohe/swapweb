@@ -2695,6 +2695,31 @@
   color: rgba(0, 0, 0, 0.54);
 }
 
+.profile-delete-list {
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+  text-align: left;
+}
+
+.profile-delete-list li {
+  position: relative;
+  padding: 4px 0 4px 18px;
+  font-size: 13.5px;
+  color: rgba(0, 0, 0, 0.72);
+}
+
+.profile-delete-list li::before {
+  content: '';
+  position: absolute;
+  left: 4px;
+  top: 11px;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #e53935;
+}
+
 .profile-dialog-actions {
   margin-top: 16px;
   display: flex;

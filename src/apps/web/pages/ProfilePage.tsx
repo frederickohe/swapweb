@@ -19,7 +19,7 @@ export function ProfilePage() {
   const [error, setError] = useState<string | null>(null)
   const [toast, setToast] = useState<string | null>(null)
   const [confirmLogout, setConfirmLogout] = useState(false)
-  const [confirmDelete, setConfirmDelete] = useState(false)
+  const [deleteStep, setDeleteStep] = useState<0 | 1 | 2>(0)
   const [loggingOut, setLoggingOut] = useState(false)
   const [deleting, setDeleting] = useState(false)
 
@@ -75,11 +75,11 @@ export function ProfilePage() {
     setDeleting(true)
     try {
       await deleteAccount()
-      setConfirmDelete(false)
+      setDeleteStep(0)
       navigate('/', { replace: true, state: { accountDeleted: true } })
     } catch (err) {
       setDeleting(false)
-      setConfirmDelete(false)
+      setDeleteStep(0)
       setToast(
         err instanceof ApiError || err instanceof Error
           ? err.message
@@ -131,7 +131,7 @@ export function ProfilePage() {
       label: 'Delete Account',
       icon: 'ri-delete-bin-line',
       destructive: true,
-      onClick: () => setConfirmDelete(true),
+      onClick: () => setDeleteStep(1),
     },
     {
       label: 'Log Out',
@@ -242,7 +242,47 @@ export function ProfilePage() {
         </div>
       )}
 
-      {confirmDelete && (
+      {deleteStep === 1 && (
+        <div className="profile-dialog-root" role="dialog" aria-modal="true">
+          <button
+            type="button"
+            className="profile-dialog-backdrop"
+            aria-label="Cancel"
+            onClick={() => setDeleteStep(0)}
+          />
+          <div className="profile-dialog">
+            <h3>Delete account?</h3>
+            <p>
+              This permanently deletes your SwapPro account. You will not be able
+              to sign in again.
+            </p>
+            <ul className="profile-delete-list">
+              <li>Your profile and personal data</li>
+              <li>All of your listings</li>
+              <li>All swap records</li>
+            </ul>
+            <p>This cannot be undone.</p>
+            <div className="profile-dialog-actions">
+              <button
+                type="button"
+                className="btn btn-secondary"
+                onClick={() => setDeleteStep(0)}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="btn profile-logout-btn"
+                onClick={() => setDeleteStep(2)}
+              >
+                Continue
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {deleteStep === 2 && (
         <div className="profile-dialog-root" role="dialog" aria-modal="true">
           <button
             type="button"
@@ -250,22 +290,21 @@ export function ProfilePage() {
             aria-label="Cancel"
             disabled={deleting}
             onClick={() => {
-              if (!deleting) setConfirmDelete(false)
+              if (!deleting) setDeleteStep(0)
             }}
           />
           <div className="profile-dialog">
-            <h3>Delete account?</h3>
+            <h3>Are you sure?</h3>
             <p>
-              This permanently deletes your SwapPro account, profile, listings, and
-              personal data. You will not be able to sign in again. This cannot be
-              undone.
+              Confirm that you want to delete your account, including all listings
+              and swap records. This cannot be undone.
             </p>
             <div className="profile-dialog-actions">
               <button
                 type="button"
                 className="btn btn-secondary"
                 disabled={deleting}
-                onClick={() => setConfirmDelete(false)}
+                onClick={() => setDeleteStep(0)}
               >
                 Cancel
               </button>
@@ -275,7 +314,7 @@ export function ProfilePage() {
                 disabled={deleting}
                 onClick={() => void onDeleteAccount()}
               >
-                {deleting ? 'Deleting…' : 'Delete'}
+                {deleting ? 'Deleting…' : 'Delete everything'}
               </button>
             </div>
           </div>
