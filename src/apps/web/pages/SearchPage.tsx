@@ -106,11 +106,11 @@ export function SearchPage() {
       <ScreenTopBar title="Search Properties" />
 
       <div className="search-toolbar">
-        <form className="shell-search" onSubmit={onSearch} role="search">
+        <form className="shell-search shell-search-home" onSubmit={onSearch} role="search">
           <input
             type="search"
             enterKeyHint="search"
-            placeholder="search here"
+            placeholder="find swap item"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             aria-label="Search listings"

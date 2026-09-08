@@ -113,6 +113,17 @@
   opacity: 0.5;
 }
 
+.shell-search-home {
+  height: 62px;
+  border-radius: 31px;
+  padding: 0 20px;
+}
+
+.shell-search-home input::placeholder {
+  font-size: 13px;
+  font-weight: 400;
+}
+
 .shell-search-btn {
   flex-shrink: 0;
   border: 0;
@@ -146,17 +157,25 @@
 .shell-home-heading-row {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 12px;
 }
 
 .shell-want-title {
   margin: 0;
   flex: 1;
   min-width: 0;
-  font-size: 22px;
-  font-weight: 700;
-  line-height: 1.2;
+  font-size: 28px;
+  font-weight: 300;
+  line-height: 1.15;
+  letter-spacing: -0.03em;
   color: var(--brand-ink);
+}
+
+.shell-home-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
 }
 
 .shell-page-heading {
@@ -202,11 +221,6 @@
 .shell-notif i {
   font-size: 22px;
   line-height: 1;
-}
-
-.shell-notif .ph-duotone {
-  /* Soft dual-tone: primary stroke + light fill */
-  --ph-fill: 0.18;
 }
 
 .shell-notif-dot {
@@ -1908,6 +1922,10 @@
   bottom: calc(var(--nav-bottom) + var(--nav-height) + 8px);
   padding: 0 24px 16px;
   background: linear-gradient(to top, #fff 70%, rgba(255, 255, 255, 0));
+}
+
+.shell-no-nav .listing-detail-cta {
+  bottom: calc(8px + env(safe-area-inset-bottom, 0px));
 }
 
 .listing-swap-this-btn {

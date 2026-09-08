@@ -55,7 +55,7 @@ export function AppShell() {
     path !== '/notifications' &&
     path !== '/my-listings/filters'
   const showFilterFab = isMyListings
-  const hideGlassNav = isSwapFlow
+  const hideGlassNav = isSwapFlow || isListingDetail
 
 
   useEffect(() => {
@@ -97,6 +97,14 @@ export function AppShell() {
     goToSearch(query)
   }
 
+  const openProfile = () => {
+    if (!isAuthenticated) {
+      openLogin({ next: '/profile' })
+      return
+    }
+    navigate('/profile')
+  }
+
   const openNotifications = () => {
     if (!isAuthenticated) {
       openLogin({ next: '/notifications' })
@@ -112,35 +120,45 @@ export function AppShell() {
   }
 
   return (
-    <div className="web-app shell">
+    <div className={`web-app shell${hideGlassNav ? ' shell-no-nav' : ''}`}>
       {!hidesShellTop && (
         <header className={`shell-top ${isHome ? 'shell-top-home' : ''}`}>
           {isHome ? (
             <div className="shell-home-header">
               <div className="shell-home-heading-row">
                 <h1 className="shell-want-title">What do you want?</h1>
-                <button
-                  type="button"
-                  className="shell-notif"
-                  aria-label={
-                    unreadCount > 0
-                      ? `Notifications, ${unreadCount} unread`
-                      : 'Notifications'
-                  }
-                  onClick={openNotifications}
-                >
-                  <i className="ph-duotone ph-bell" aria-hidden />
-                  {unreadCount > 0 && <span className="shell-notif-dot" aria-hidden />}
-                </button>
+                <div className="shell-home-actions">
+                  <button
+                    type="button"
+                    className="shell-notif"
+                    aria-label="Your profile"
+                    onClick={openProfile}
+                  >
+                    <i className="ri-user-3-line" aria-hidden />
+                  </button>
+                  <button
+                    type="button"
+                    className="shell-notif"
+                    aria-label={
+                      unreadCount > 0
+                        ? `Notifications, ${unreadCount} unread`
+                        : 'Notifications'
+                    }
+                    onClick={openNotifications}
+                  >
+                    <i className="ph ph-bell" aria-hidden />
+                    {unreadCount > 0 && <span className="shell-notif-dot" aria-hidden />}
+                  </button>
+                </div>
               </div>
-              <form className="shell-search" onSubmit={onSearch} role="search">
+              <form className="shell-search shell-search-home" onSubmit={onSearch} role="search">
                 <input
                   type="search"
                   enterKeyHint="search"
-                  placeholder="search here"
+                  placeholder="find swap item"
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
-                  aria-label="Search listings"
+                  aria-label="Find swap item"
                 />
                 <button type="submit" className="shell-search-btn" aria-label="Search">
                   <i className="ri-search-line" aria-hidden />
@@ -157,10 +175,10 @@ export function AppShell() {
                 <input
                   type="search"
                   enterKeyHint="search"
-                  placeholder="search here"
+                  placeholder="find swap item"
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
-                  aria-label="Search listings"
+                  aria-label="Find swap item"
                 />
                 <button type="submit" className="shell-search-btn" aria-label="Search">
                   <i className="ri-search-line" aria-hidden />
@@ -177,7 +195,7 @@ export function AppShell() {
                 }
                 onClick={openNotifications}
               >
-                <i className="ph-duotone ph-bell" aria-hidden />
+                <i className="ph ph-bell" aria-hidden />
                 {unreadCount > 0 && <span className="shell-notif-dot" aria-hidden />}
               </button>
             </>
