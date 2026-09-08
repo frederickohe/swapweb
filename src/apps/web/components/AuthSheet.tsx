@@ -4,6 +4,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type FormEvent,
   type ReactNode,
@@ -11,6 +12,16 @@ import {
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../core/AuthContext'
 import { ApiError } from '../core/utils/apiError'
+import { AuthPinField } from './AuthPinField'
+
+function authErrorMessage(err: unknown, fallback: string): string {
+  const raw =
+    err instanceof ApiError || err instanceof Error ? err.message : fallback
+  if (raw.toLowerCase().includes('invalid username and password')) {
+    return 'Invalid email or PIN'
+  }
+  return raw
+}
 
 export const AUTH_REQUIRED_EVENT = 'swappro:auth-required'
 
@@ -50,17 +61,21 @@ export function AuthSheetProvider({ children }: { children: ReactNode }) {
   const [fullname, setFullname] = useState('')
   const [email, setEmail] = useState('')
   const [phone, setPhone] = useState('')
-  const [password, setPassword] = useState('')
+  const [pin, setPin] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const [infoMessage, setInfoMessage] = useState<string | null>(null)
+  const autoSubmittedPin = useRef<string | null>(null)
+  const submittingRef = useRef(false)
 
   const resetForm = useCallback(() => {
     setFullname('')
     setEmail('')
     setPhone('')
-    setPassword('')
+    setPin('')
     setSubmitting(false)
+    submittingRef.current = false
+    autoSubmittedPin.current = null
     setErrorMessage(null)
     setInfoMessage(null)
   }, [])
@@ -129,28 +144,43 @@ export function AuthSheetProvider({ children }: { children: ReactNode }) {
     navigate(target, { replace: true })
   }, [closeAuthSheet, navigate, nextPath])
 
-  const submitLogin = async (e: FormEvent) => {
-    e.preventDefault()
-    if (!email.trim() || !password) return
+  const submitLogin = async (pinValue: string) => {
+    if (submittingRef.current) return
+    if (!email.trim() || pinValue.length !== 4) return
+
+    autoSubmittedPin.current = pinValue
+    submittingRef.current = true
     setSubmitting(true)
     setErrorMessage(null)
     try {
-      await login({ email: email.trim(), password })
+      await login({ email: email.trim(), password: pinValue })
       finishAuth()
     } catch (err) {
-      setErrorMessage(
-        err instanceof ApiError || err instanceof Error
-          ? err.message
-          : 'Unable to sign in. Please try again.',
-      )
+      setErrorMessage(authErrorMessage(err, 'Unable to sign in. Please try again.'))
     } finally {
+      submittingRef.current = false
       setSubmitting(false)
     }
   }
 
+  const handleLoginPinChange = (next: string) => {
+    setPin(next)
+    if (next.length !== 4) {
+      autoSubmittedPin.current = null
+      return
+    }
+    if (next === autoSubmittedPin.current) return
+    void submitLogin(next)
+  }
+
+  const submitLoginForm = (e: FormEvent) => {
+    e.preventDefault()
+    void submitLogin(pin)
+  }
+
   const submitSignup = async (e: FormEvent) => {
     e.preventDefault()
-    if (!fullname.trim() || !email.trim() || password.length < 4) return
+    if (!fullname.trim() || !email.trim() || pin.length !== 4) return
     setSubmitting(true)
     setErrorMessage(null)
     setInfoMessage(null)
@@ -158,22 +188,18 @@ export function AuthSheetProvider({ children }: { children: ReactNode }) {
       await signup({
         fullname: fullname.trim(),
         email: email.trim(),
-        password,
+        password: pin,
         phone: phone.trim() || undefined,
       })
       try {
-        await login({ email: email.trim(), password })
+        await login({ email: email.trim(), password: pin })
         finishAuth()
       } catch {
         setMode('login')
         setInfoMessage('Account created. Please sign in to continue.')
       }
     } catch (err) {
-      setErrorMessage(
-        err instanceof ApiError || err instanceof Error
-          ? err.message
-          : 'Unable to create account.',
-      )
+      setErrorMessage(authErrorMessage(err, 'Unable to create account.'))
     } finally {
       setSubmitting(false)
     }
@@ -223,7 +249,7 @@ export function AuthSheetProvider({ children }: { children: ReactNode }) {
             </div>
             <p className="auth-sheet-sub">
               {mode === 'login'
-                ? 'Sign in to list items and swap.'
+                ? 'Enter your email and PIN'
                 : 'Join SwapPro to list items and make swaps.'}
             </p>
 
@@ -249,7 +275,7 @@ export function AuthSheetProvider({ children }: { children: ReactNode }) {
             )}
 
             {mode === 'login' ? (
-              <form onSubmit={(e) => void submitLogin(e)} noValidate>
+              <form onSubmit={submitLoginForm} noValidate>
                 <div className="form-group">
                   <label className="form-label" htmlFor="sheet-email">
                     Email
@@ -265,18 +291,10 @@ export function AuthSheetProvider({ children }: { children: ReactNode }) {
                   />
                 </div>
                 <div className="form-group">
-                  <label className="form-label" htmlFor="sheet-password">
-                    Password
+                  <label className="form-label" htmlFor="auth-pin">
+                    PIN
                   </label>
-                  <input
-                    id="sheet-password"
-                    type="password"
-                    className="form-input"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    autoComplete="current-password"
-                    required
-                  />
+                  <AuthPinField value={pin} onChange={handleLoginPinChange} />
                 </div>
                 <button
                   type="submit"
@@ -328,18 +346,13 @@ export function AuthSheetProvider({ children }: { children: ReactNode }) {
                   />
                 </div>
                 <div className="form-group">
-                  <label className="form-label" htmlFor="sheet-signup-password">
-                    Password
+                  <label className="form-label" htmlFor="auth-pin-signup">
+                    4-digit PIN
                   </label>
-                  <input
-                    id="sheet-signup-password"
-                    type="password"
-                    className="form-input"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    autoComplete="new-password"
-                    minLength={4}
-                    required
+                  <AuthPinField
+                    id="auth-pin-signup"
+                    value={pin}
+                    onChange={setPin}
                   />
                 </div>
                 <button
@@ -359,6 +372,8 @@ export function AuthSheetProvider({ children }: { children: ReactNode }) {
                   className="auth-sheet-switch"
                   onClick={() => {
                     setMode('signup')
+                    setPin('')
+                    autoSubmittedPin.current = null
                     setErrorMessage(null)
                     setInfoMessage(null)
                     setSessionExpired(false)
@@ -372,6 +387,8 @@ export function AuthSheetProvider({ children }: { children: ReactNode }) {
                   className="auth-sheet-switch"
                   onClick={() => {
                     setMode('login')
+                    setPin('')
+                    autoSubmittedPin.current = null
                     setErrorMessage(null)
                     setInfoMessage(null)
                   }}
